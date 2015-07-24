@@ -11,7 +11,7 @@ $(document).ready(function(){
     //camera//
     //////////
 
-    camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 1, 5000 );
+    camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 1, 100000 );
 
     camera.position.set(0, 300, -500);
     ////////////
@@ -168,7 +168,7 @@ $(document).ready(function(){
     controls.dynamicDampingFactor = 0.3;
      
     controls.minDistance = 0.1;
-    controls.maxDistance = 2000000000;
+    controls.maxDistance = 4000;
      
     controls.keys = [ 16, 17, 18 ]; // [ rotateKey, zoomKey, panKey ] 
 
