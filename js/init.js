@@ -3,8 +3,6 @@ var waterPlane;
 var tree = [];
 $(document).ready(function(){
 
-
-
     scene = new THREE.Scene();
 
     //////////
@@ -24,32 +22,13 @@ $(document).ready(function(){
     renderer.shadowMapEnabled = true;
     renderer.shadowMapSoft = true;
     renderer.autoClear = true;
+    renderer.shadowMapType = THREE.PCFSoftShadowMap;
 
     document.body.appendChild( renderer.domElement );
 
     var geometry = new THREE.BoxGeometry( 1, 1, 1 );
     var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-/*
-    
-    ///////
-    //sky//
-    ///////
 
-
-    var skyGeometry = new THREE.BoxGeometry( 5000, 5000, 5000 );   
-    
-    var materialArray = [
-        new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture( 'img/brick.jpg' ), side:THREE.BackSide}),    //right
-        new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture( 'img/brick.jpg' ), side:THREE.BackSide}),    //left
-        new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture( 'img/brick.jpg' ), side:THREE.BackSide}),    //top
-        new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture( 'img/brick.jpg' ), side:THREE.BackSide}),    //bottom
-        new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture( 'img/brick.jpg' ), side:THREE.BackSide}),    //back
-        new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture( 'img/brick.jpg' ), side:THREE.BackSide}),    //front
-        ];
-    var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
-    var skyBox = new THREE.Mesh( skyGeometry, skyMaterial );
-    scene.add( skyBox );
-*/
     /////////
     //water//
     /////////
@@ -76,6 +55,7 @@ $(document).ready(function(){
     var geometry = new THREE.PlaneGeometry( 500, 500, worldWidth - 1, worldWidth - 1 );
     geometry.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI / 2 ) );
 
+
     var mountainMaterial = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe:false, side:THREE.DoubleSide } );
     mountain = new THREE.Mesh( geometry, mountainMaterial  );
     generateHeight(worldWidth, smoothinFactor, boundaryHeight, treeNumber);
@@ -83,7 +63,6 @@ $(document).ready(function(){
     mountain.receiveShadow = true;
     mountain.castShadow = true;
     scene.add( mountain );
-
 
 
     //////////
@@ -238,32 +217,7 @@ $(document).ready(function(){
         generateHeight(worldWidth, smoothinFactor, boundaryHeight, treeNumber);
     });
 
-    
 
-
-    ////////
-    //tree//
-    ////////
-
-    
-
-
-    //////////
-    //mirror//
-    //////////
-/*
-    //Create cube camera
-    var cubeGeom = new THREE.BoxGeometry(100, 10, 10, 1, 1, 1);
-    mirrorCubeCamera = new THREE.CubeCamera( 0.1, 5000, 512 );
-    // mirrorCubeCamera.renderTarget.minFilter = THREE.LinearMipMapLinearFilter;
-    scene.add( mirrorCubeCamera );
-    var mirrorCubeMaterial = new THREE.MeshBasicMaterial( { color:0xffff00, envMap: mirrorCubeCamera.renderTarget } );
-    mirrorCube = new THREE.Mesh( cubeGeom, mirrorCubeMaterial );
-    mirrorCube.position.set(0,0,0);
-    mirrorCubeCamera.position = mirrorCube.position;
-    scene.add(mirrorCube);
-
-*/
 
 
     ///////////
@@ -273,12 +227,6 @@ $(document).ready(function(){
     var waveCounter = 0;
     var render = function () {
         
-
-//        mirrorCube.visible = false;
-//        mirrorCubeCamera.updateCubeMap( renderer, scene );
-//        mirrorCube.visible = true;
-
-
         requestAnimationFrame( render );
         renderer.render(scene, camera);
         controls.update(); //for cameras
@@ -298,7 +246,6 @@ $(document).ready(function(){
 });
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////awesome tree builder
 function buildTree() {
   var treeMaterial = new THREE.MeshFaceMaterial([
     new THREE.MeshLambertMaterial({ color: 0x3d2817, wireframe:false }), // brown
