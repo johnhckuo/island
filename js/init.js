@@ -11,7 +11,7 @@ $(document).ready(function(){
     //camera//
     //////////
 
-    camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 1, 10000000000 );
+    camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 1, 1000 );
 
     camera.position.set(0, 300, -500);
     ////////////
@@ -185,7 +185,7 @@ $(document).ready(function(){
         Smooth : smoothinFactor,
         Height : boundaryHeight,
         CastShadow : true,
-        Wireframe : true
+        Wireframe : false
     };
 
 
