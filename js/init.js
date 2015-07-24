@@ -11,7 +11,7 @@ $(document).ready(function(){
     //camera//
     //////////
 
-    camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.00001, 10000000000 );
+    camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 1, 10000000000 );
 
     camera.position.set(0, 300, -500);
     ////////////
@@ -56,11 +56,13 @@ $(document).ready(function(){
     var worldWidth = 64, worldDepth = 64, worldHalfWidth = worldWidth / 2, worldHalfDepth = worldDepth / 2;
 
 
-    var geometry = new THREE.PlaneGeometry(1000, 1000, worldWidth - 1, worldDepth - 1 );
+    var geometry = new THREE.PlaneGeometry(4000, 4000, worldWidth - 1, worldDepth - 1 );
     geometry.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI / 2 ) );
     
 
-    waterPlane = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: 0x0000ff, wireframe:true } ) );
+    waterPlane = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: 0x33CCFF, wireframe:false } ) );
+    //waterPlane.castShadow = true;
+    waterPlane.receiveShadow = true;
     scene.add( waterPlane );
 
     ////////////
@@ -68,24 +70,60 @@ $(document).ready(function(){
     ////////////
 
     var worldWidth = 64;
-    var smoothinFactor = 150, boundaryHeight = 100;
+    var smoothinFactor = 150, boundaryHeight = 80;
     var treeNumber = 80;
 
-    var geometry = new THREE.PlaneGeometry( 500, 500, worldWidth - 1, worldDepth - 1 );
+    var geometry = new THREE.PlaneGeometry( 500, 500, worldWidth - 1, worldWidth - 1 );
     geometry.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI / 2 ) );
 
-    mountain = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe:true, side:THREE.DoubleSide } ) );
+    var mountainMaterial = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe:false, side:THREE.DoubleSide } );
+    mountain = new THREE.Mesh( geometry, mountainMaterial  );
     generateHeight(worldWidth, smoothinFactor, boundaryHeight, treeNumber);
     
-
+    mountain.receiveShadow = true;
+    mountain.castShadow = true;
     scene.add( mountain );
+
+
+
+    //////////
+    //skybox//
+    //////////
+
+    var skyGeometry = new THREE.CubeGeometry( 5000, 5000, 5000 );   
+    
+    
+    var imagePrefix = "img/";
+    var imageSuffix = ".png";
+    var materialArray = [];
+    
+
+    var materialArray = [
+
+                    new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/skyTexture/px.jpg' ) ,side: THREE.BackSide } ), // right
+                    new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/skyTexture/nx.jpg' ) ,side: THREE.BackSide } ), // left
+                    new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/skyTexture/py.jpg' ) ,side: THREE.BackSide } ), // top
+                    new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/skyTexture/ny.jpg' ) ,side: THREE.BackSide } ), // bottom
+                    new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/skyTexture/pz.jpg' ) ,side: THREE.BackSide } ), // back
+                    new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/skyTexture/nz.jpg' ) ,side: THREE.BackSide } )  // front
+                
+                ];          
+    var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
+    
+    var skyBox = new THREE.Mesh( skyGeometry, skyMaterial );
+    scene.add( skyBox );
+    
+
 
     /////////
     //light//
     /////////
 
-    var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
-    directionalLight.position.set( 100, 100, 0 );
+    var directionalLight = new THREE.DirectionalLight( 0xffffff, 4.5 );
+    directionalLight.position.set( 500, 100, 500 );
+    directionalLight.castShadow = true;
+    directionalLight.shadowMapWidth = 1024;
+    directionalLight.shadowMapHeight = 1024;
     scene.add( directionalLight );
     ////////
     //info//
@@ -145,14 +183,50 @@ $(document).ready(function(){
     var params = {
         TreeNumber: treeNumber,
         Smooth : smoothinFactor,
-        Height : boundaryHeight
+        Height : boundaryHeight,
+        CastShadow : true,
+        Wireframe : true
     };
 
 
     var button = { Regenerate:function(){ generateHeight(worldWidth, smoothinFactor, boundaryHeight, treeNumber); }};
     gui.add(button,'Regenerate');
 
+    gui.add(params, 'TreeNumber').min(0).max(300).step(1).onFinishChange(function(){
+        treeNumber = params.TreeNumber;
+        generateHeight(worldWidth, smoothinFactor, boundaryHeight, treeNumber);
+    });
 
+    gui.add(params, 'Wireframe').onFinishChange(function(){
+        
+        if(params.Wireframe == true){
+            waterPlane.material.wireframe = true;
+            mountain.material.wireframe = true;
+
+        }
+        else{
+            waterPlane.material.wireframe = false;
+            mountain.material.wireframe = false;
+        }
+    });
+
+    gui.add(params, 'CastShadow').onFinishChange(function(){
+        
+        if(params.CastShadow == false){
+            waterPlane.material = new THREE.MeshBasicMaterial( { color: 0x0000ff, wireframe:params.Wireframe } );
+            mountain.material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe:params.Wireframe, side:THREE.DoubleSide } );
+            waterPlane.receiveShadow = false;
+            mountain.receiveShadow = false;
+            mountain.castShadow = false;
+        }
+        else{
+            waterPlane.material = new THREE.MeshLambertMaterial( { color: 0x33CCFF, wireframe:params.Wireframe } );
+            mountain.material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe:params.Wireframe, side:THREE.DoubleSide } );
+            waterPlane.receiveShadow = true;
+            mountain.receiveShadow = true;
+            mountain.castShadow = true;
+        }
+    });
 
     gui.add(params, 'Height').min(0).max(300).step(1).onFinishChange(function(){
         boundaryHeight = params.Height;
@@ -164,10 +238,7 @@ $(document).ready(function(){
         generateHeight(worldWidth, smoothinFactor, boundaryHeight, treeNumber);
     });
 
-    gui.add(params, 'TreeNumber').min(0).max(300).step(1).onFinishChange(function(){
-        treeNumber = params.TreeNumber;
-        generateHeight(worldWidth, smoothinFactor, boundaryHeight, treeNumber);
-    });
+    
 
 
     ////////
@@ -229,9 +300,9 @@ $(document).ready(function(){
 
 //////////////////////////////////////////////////////////////////////////////////////////////awesome tree builder
 function buildTree() {
-  var material = new THREE.MeshFaceMaterial([
-    new THREE.MeshBasicMaterial({ color: 0x3d2817, wireframe:false }), // brown
-    new THREE.MeshBasicMaterial({ color: 0x2d4c1e, wireframe:false }), // green
+  var treeMaterial = new THREE.MeshFaceMaterial([
+    new THREE.MeshLambertMaterial({ color: 0x3d2817, wireframe:false }), // brown
+    new THREE.MeshLambertMaterial({ color: 0x2d4c1e, wireframe:false }), // green
   ]);
 
   var c0 = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 12, 6, 1, true));
@@ -258,10 +329,12 @@ function buildTree() {
     g.faces[i].materialIndex = i < b ? 0 : 1;
   }
 
-  var m = new THREE.Mesh(g, material);
+  var m = new THREE.Mesh(g, treeMaterial);
 
   m.scale.x = m.scale.z = 3;
   m.scale.y = 5;
+  m.castShadow = true;
+  m.receiveShadow = true;
   return m;
 }
 
@@ -287,6 +360,8 @@ function generateHeight(worldWidth, smoothinFactor, boundaryHeight, treeNumber){
         }
     }
 
+
+
     for(var i = 0; i < treeNumber; i++) {
         tree[i] = buildTree();
         var randomPosition = Math.ceil(Math.random()*(worldWidth-1)*(worldWidth-1));
@@ -295,7 +370,10 @@ function generateHeight(worldWidth, smoothinFactor, boundaryHeight, treeNumber){
         tree[i].position.z = mountain.geometry.vertices[randomPosition].z;
         tree[i].scale.set(0.5,0.5,0.5)
         scene.add(tree[i])
+ 
+        
     }
+    
 }
 
 
