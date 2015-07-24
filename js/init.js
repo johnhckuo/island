@@ -185,7 +185,7 @@ $(document).ready(function(){
         Smooth : smoothinFactor,
         Height : boundaryHeight,
         CastShadow : true,
-        Wireframe : true
+        Wireframe : false
     };
 
 
