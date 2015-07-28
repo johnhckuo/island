@@ -1,6 +1,7 @@
 var scene, camera, renderer, controls, stats;    
 var waterPlane;
 var tree = [];
+var boxSize = 5000;
 $(document).ready(function(){
 
     scene = new THREE.Scene();
@@ -35,11 +36,14 @@ $(document).ready(function(){
     var worldWidth = 64, worldDepth = 64, worldHalfWidth = worldWidth / 2, worldHalfDepth = worldDepth / 2;
 
 
-    var geometry = new THREE.PlaneGeometry(4000, 4000, worldWidth - 1, worldDepth - 1 );
+    var geometry = new THREE.PlaneGeometry(boxSize, boxSize, worldWidth - 1, worldDepth - 1 );
     geometry.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI / 2 ) );
     
+    var texture = THREE.ImageUtils.loadTexture( "img/water.jpg" );
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set( 5, 5 );
 
-    waterPlane = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: 0x2B65EC, wireframe:false } ) );
+    waterPlane = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: 0x0055ff, wireframe:false, map:texture } ) );
     //waterPlane.castShadow = true;
     waterPlane.receiveShadow = true;
     scene.add( waterPlane );
@@ -74,24 +78,24 @@ $(document).ready(function(){
     //skybox//
     //////////
 
-    var skyGeometry = new THREE.BoxGeometry( 5000, 5000, 5000 );   
+    var skyGeometry = new THREE.BoxGeometry( boxSize, boxSize, boxSize );   
     
     
     var imagePrefix = "img/";
     var imageSuffix = ".png";
     var materialArray = [];
-    
 
     var materialArray = [
 
-                    new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/skyTexture/px.jpg' ) ,side: THREE.BackSide } ), // right
-                    new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/skyTexture/nx.jpg' ) ,side: THREE.BackSide } ), // left
-                    new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/skyTexture/py.jpg' ) ,side: THREE.BackSide } ), // top
-                    new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/skyTexture/ny.jpg' ) ,side: THREE.BackSide } ), // bottom
-                    new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/skyTexture/pz.jpg' ) ,side: THREE.BackSide } ), // back
-                    new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/skyTexture/nz.jpg' ) ,side: THREE.BackSide } )  // front
+                    new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/newSky/px.jpg' ) ,side: THREE.BackSide } ), // right
+                    new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/newSky/nx.jpg' ) ,side: THREE.BackSide } ), // left
+                    new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/newSky/py.jpg' ) ,side: THREE.BackSide } ), // top
+                    new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/newSky/ny.jpg' ) ,side: THREE.BackSide } ), // bottom
+                    new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/newSky/pz.jpg' ) ,side: THREE.BackSide } ), // back
+                    new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/newSky/nz.jpg' ) ,side: THREE.BackSide } )  // front
                 
-                ];          
+                ]; 
+
     var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
     
     var skyBox = new THREE.Mesh( skyGeometry, skyMaterial );
@@ -109,6 +113,13 @@ $(document).ready(function(){
     directionalLight.shadowMapWidth = 2048;
     directionalLight.shadowMapHeight = 2048;
     scene.add( directionalLight );
+
+    ///////
+    //fog//
+    ///////
+
+    scene.fog = new THREE.Fog(0xffffff,0,boxSize*(3/4));
+
     ////////
     //info//
     ////////
@@ -152,7 +163,7 @@ $(document).ready(function(){
     controls.dynamicDampingFactor = 0.3;
      
     controls.minDistance = 0.1;
-    controls.maxDistance = 4000;
+    controls.maxDistance = boxSize/2;
      
     controls.keys = [ 16, 17, 18 ]; // [ rotateKey, zoomKey, panKey ] 
 
@@ -223,7 +234,11 @@ $(document).ready(function(){
             }
         }
         else{
-            waterPlane.material = new THREE.MeshLambertMaterial( { color: 0x2B65EC, wireframe:params.Wireframe } );
+
+            var texture = THREE.ImageUtils.loadTexture( "img/water.jpg" );
+            texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.set( 5, 5 );
+            waterPlane.material = new THREE.MeshLambertMaterial( { color: 0x2B65EC, wireframe:params.Wireframe, map:texture } );
 
             var grassTex = THREE.ImageUtils.loadTexture('img/grass.png');
             grassTex.wrapS = THREE.RepeatWrapping;
