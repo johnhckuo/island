@@ -84,19 +84,7 @@ $(document).ready(function(){
     var imagePrefix = "img/";
     var imageSuffix = ".png";
     var materialArray = [];
-    
-/*
-    var materialArray = [
 
-                    new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/skyTexture/px.jpg' ) ,side: THREE.BackSide } ), // right
-                    new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/skyTexture/nx.jpg' ) ,side: THREE.BackSide } ), // left
-                    new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/skyTexture/py.jpg' ) ,side: THREE.BackSide } ), // top
-                    new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/skyTexture/ny.jpg' ) ,side: THREE.BackSide } ), // bottom
-                    new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/skyTexture/pz.jpg' ) ,side: THREE.BackSide } ), // back
-                    new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/skyTexture/nz.jpg' ) ,side: THREE.BackSide } )  // front
-                
-                ]; 
-*/         
     var materialArray = [
 
                     new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'img/newSky/px.jpg' ) ,side: THREE.BackSide } ), // right
