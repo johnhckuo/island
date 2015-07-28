@@ -9,8 +9,8 @@ $(document).ready(function(){
     //camera//
     //////////
 
-    camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 1, 100000 );
 
+    camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 1, 100000 );
     camera.position.set(0, 300, -500);
     ////////////
     //renderer//
@@ -39,7 +39,7 @@ $(document).ready(function(){
     geometry.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI / 2 ) );
     
 
-    waterPlane = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: 0x33CCFF, wireframe:false } ) );
+    waterPlane = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: 0x2B65EC, wireframe:false } ) );
     //waterPlane.castShadow = true;
     waterPlane.receiveShadow = true;
     scene.add( waterPlane );
@@ -55,8 +55,13 @@ $(document).ready(function(){
     var geometry = new THREE.PlaneGeometry( 500, 500, worldWidth - 1, worldWidth - 1 );
     geometry.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI / 2 ) );
 
+    var grassTex = THREE.ImageUtils.loadTexture('img/grass.png');
+    grassTex.wrapS = THREE.RepeatWrapping;
+    grassTex.wrapT = THREE.RepeatWrapping;
+    grassTex.repeat.x = 16;
+    grassTex.repeat.y = 16;
 
-    var mountainMaterial = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe:false, side:THREE.DoubleSide } );
+    var mountainMaterial = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe:false, side:THREE.DoubleSide, map:grassTex } );
     mountain = new THREE.Mesh( geometry, mountainMaterial  );
     generateHeight(worldWidth, smoothinFactor, boundaryHeight, treeNumber);
     
@@ -69,7 +74,7 @@ $(document).ready(function(){
     //skybox//
     //////////
 
-    var skyGeometry = new THREE.CubeGeometry( 5000, 5000, 5000 );   
+    var skyGeometry = new THREE.BoxGeometry( 5000, 5000, 5000 );   
     
     
     var imagePrefix = "img/";
@@ -98,11 +103,11 @@ $(document).ready(function(){
     //light//
     /////////
 
-    var directionalLight = new THREE.DirectionalLight( 0xffffff, 4.5 );
-    directionalLight.position.set( 500, 100, 500 );
+    var directionalLight = new THREE.DirectionalLight( 0xffffff, 6.5 );
+    directionalLight.position.set( 500, 200, 500 );
     directionalLight.castShadow = true;
-    directionalLight.shadowMapWidth = 1024;
-    directionalLight.shadowMapHeight = 1024;
+    directionalLight.shadowMapWidth = 2048;
+    directionalLight.shadowMapHeight = 2048;
     scene.add( directionalLight );
     ////////
     //info//
@@ -163,7 +168,7 @@ $(document).ready(function(){
         TreeNumber: treeNumber,
         Smooth : smoothinFactor,
         Height : boundaryHeight,
-        CastShadow : true,
+        BasicMaterial : false,
         Wireframe : false
     };
 
@@ -181,29 +186,61 @@ $(document).ready(function(){
         if(params.Wireframe == true){
             waterPlane.material.wireframe = true;
             mountain.material.wireframe = true;
+            for (var i = 0 ; i < tree.length ; i ++){
+                tree[i].material = new THREE.MeshFaceMaterial([
+                    new THREE.MeshBasicMaterial({ color: 0x3d2817, wireframe:params.Wireframe}), // brown
+                    new THREE.MeshBasicMaterial({ color: 0x2d4c1e, wireframe:params.Wireframe}), // green
+                ]);;
+            }
 
         }
         else{
             waterPlane.material.wireframe = false;
             mountain.material.wireframe = false;
+            for (var i = 0 ; i < tree.length ; i ++){
+                tree[i].material = new THREE.MeshFaceMaterial([
+                    new THREE.MeshLambertMaterial({ color: 0x3d2817, wireframe:params.Wireframe}), // brown
+                    new THREE.MeshLambertMaterial({ color: 0x2d4c1e, wireframe:params.Wireframe}), // green
+                ]);;
+            }
         }
     });
 
-    gui.add(params, 'CastShadow').onFinishChange(function(){
+    gui.add(params, 'BasicMaterial').onFinishChange(function(){
         
-        if(params.CastShadow == false){
-            waterPlane.material = new THREE.MeshBasicMaterial( { color: 0x0000ff, wireframe:params.Wireframe } );
+        if(params.BasicMaterial == true){
+            waterPlane.material = new THREE.MeshBasicMaterial( { color: 0x2B65EC, wireframe:params.Wireframe } );
             mountain.material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe:params.Wireframe, side:THREE.DoubleSide } );
             waterPlane.receiveShadow = false;
             mountain.receiveShadow = false;
             mountain.castShadow = false;
+
+            for (var i = 0 ; i < tree.length ; i ++){
+                tree[i].material = new THREE.MeshFaceMaterial([
+                    new THREE.MeshBasicMaterial({ color: 0x3d2817, wireframe:params.Wireframe}), // brown
+                    new THREE.MeshBasicMaterial({ color: 0x2d4c1e, wireframe:params.Wireframe}), // green
+                ]);;
+            }
         }
         else{
-            waterPlane.material = new THREE.MeshLambertMaterial( { color: 0x33CCFF, wireframe:params.Wireframe } );
-            mountain.material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe:params.Wireframe, side:THREE.DoubleSide } );
+            waterPlane.material = new THREE.MeshLambertMaterial( { color: 0x2B65EC, wireframe:params.Wireframe } );
+
+            var grassTex = THREE.ImageUtils.loadTexture('img/grass.png');
+            grassTex.wrapS = THREE.RepeatWrapping;
+            grassTex.wrapT = THREE.RepeatWrapping;
+            grassTex.repeat.x = 16;
+            grassTex.repeat.y = 16;
+            mountain.material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe:params.Wireframe, side:THREE.DoubleSide, map:grassTex } );
             waterPlane.receiveShadow = true;
             mountain.receiveShadow = true;
             mountain.castShadow = true;
+
+            for (var i = 0 ; i < tree.length ; i ++){
+                tree[i].material = new THREE.MeshFaceMaterial([
+                    new THREE.MeshLambertMaterial({ color: 0x3d2817, wireframe:params.Wireframe}), // brown
+                    new THREE.MeshLambertMaterial({ color: 0x2d4c1e, wireframe:params.Wireframe}), // green
+                ]);;
+            }
         }
     });
 
