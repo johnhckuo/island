@@ -1,0 +1,28 @@
+{
+  "name": "island_generator",
+  "version": "1.0.0",
+  "description": "Simulating island terrain using Three.js & A-frame",
+  "scripts": {
+    "start": "http-server ./ -c-1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/johnhckuo/Island_Generator.git"
+  },
+  "keywords": [
+    "Three.js",
+    "webvr",
+    "aframe",
+    "vr"
+  ],
+  "author": "johnhckuo",
+  "license": "MIT",
+
+  "devDependencies": {
+    "http-server": "latest"
+  },
+  "bugs": {
+    "url": "https://github.com/johnhckuo/Island_Generator/issues"
+  },
+  "homepage": "https://github.com/johnhckuo/Island_Generator#readme"
+}

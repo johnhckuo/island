@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Island Generator by johnhckuo</title>
+	<script></script>
+	<link rel="stylesheet" href="css/style.css">
+
+	<script src='js/jquery-1.11.3.min.js'></script>
+	<script src="js/Stats.js"></script>
+	<script src='js/three.js'></script>
+	<script src='js/terrainGeneration.js'></script>
+	<script src='js/dat.gui.min.js'></script>
+	<script src='js/Detector.js'></script>
+	<script src='js/aframe.min.js'></script>
+
+</head>
+<body>
+	<a-scene>
+		<div id="container"></div>
+		<a-assets>
+		</a-assets>
+		<a-entity land id="land"></a-entity>
+		<a-entity water id="water"></a-entity>
+		<a-entity sky id="sky"></a-entity>
+		<a-entity tree id="tree"></a-entity>
+		<a-entity directional_light id="light"></a-entity>
+
+	</a-scene>
+	<script src='js/init.js'></script>
+</body>
+</html>
