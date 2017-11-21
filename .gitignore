@@ -38,5 +38,4 @@ Thumbs.db
 
 # Specific files #
 ######################
-app/node_modules
-app/server/lib/mailSetting.js
+node_modules
