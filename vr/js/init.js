@@ -36,6 +36,13 @@ function aframe_init(){
     }
   });
 
+  AFRAME.registerComponent('directional_light', {
+    init: function () {
+        el = this.el;  // Entity.
+        light_init(el);
+    }
+  });
+
 }
 
 function land_init(el){
@@ -43,7 +50,18 @@ function land_init(el){
   var geometry = new THREE.PlaneGeometry( 500, 500, worldWidth - 1, worldWidth - 1 );
   geometry.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI / 2 ) );
 
-  var mountainMaterial = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe:false, side:THREE.DoubleSide } );
+  var loader = new THREE.TextureLoader();
+  var grassTex = loader.load('/vr/img/grass.png', function(){
+    grassTex.wrapS = THREE.RepeatWrapping;
+    grassTex.wrapT = THREE.RepeatWrapping;
+    grassTex.repeat.x = 16;
+    grassTex.repeat.y = 16;
+  });
+
+
+  // var mountainMaterial = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe:false, side:THREE.DoubleSide, map:grassTex } );
+  var mountainMaterial = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe:false, side:THREE.DoubleSide, map:grassTex } );
+
   mountain = new THREE.Mesh( geometry, mountainMaterial  );
   generateHeight(worldWidth, smoothinFactor, boundaryHeight, treeNumber);
 
@@ -95,12 +113,25 @@ function water_init(el){
 // }
 
 function light_init(el){
-  var directionalLight = new THREE.DirectionalLight( 0xffffff, 6.5 );
-  directionalLight.position.set( 500, 200, 500 );
-  directionalLight.castShadow = true;
-  directionalLight.shadowMapWidth = 2048;
-  directionalLight.shadowMapHeight = 2048;
-  el.setObject3D('light', directionalLight);
+  light = new THREE.DirectionalLight(0xffffff, 1.5);
+  light.position.set(500, 200, 500);
+
+  light.castShadow = true;
+
+  light.shadow.mapSize.width = 1024;
+  light.shadow.mapSize.height = 1024;
+
+  var d = 400;
+
+  light.shadow.camera.left = -d;
+  light.shadow.camera.right = d;
+  light.shadow.camera.top = d;
+  light.shadow.camera.bottom = -d;
+
+  light.shadow.camera.far = 5000;
+
+  el.setObject3D('light', light);
+
 
 }
 
