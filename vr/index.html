@@ -7,26 +7,33 @@
 	<link rel="stylesheet" href="css/style.css">
 
 	<script src='js/jquery-1.11.3.min.js'></script>
-	<script src="js/Stats.js"></script>
 	<script src='js/three.js'></script>
 	<script src='js/terrainGeneration.js'></script>
 	<script src='js/dat.gui.min.js'></script>
 	<script src='js/Detector.js'></script>
 	<script src='js/aframe.min.js'></script>
+	<script src='js/init.js'></script>
 
 </head>
 <body>
-	<a-scene>
-		<div id="container"></div>
+	<a-scene stats>
 		<a-assets>
+			<img id="sky" src="/vr/img/sky.jpg"  alt="">
+			<img id="grass" src="/vr/img/grass.png"  alt="">
 		</a-assets>
-		<a-entity land id="land"></a-entity>
-		<a-entity water id="water"></a-entity>
-		<a-entity sky id="sky"></a-entity>
-		<a-entity tree id="tree"></a-entity>
-		<a-entity directional_light id="light"></a-entity>
+		<a-entity land id="land" material="src:#grass; repeat:16 16" shadow="cast:true;receive:true;">
+			<a-entity tree id="tree" shadow="cast:true;receive:true;"></a-entity>
+		</a-entity>
 
+		<a-entity water id="water"></a-entity>
+		<a-sky src="#sky"></a-sky>
+		<a-entity light="type:directional; castShadow:true;" position="1 1 1"></a-entity>
+
+		<!-- <a-entity directional_light id="light"></a-entity> -->
+		<a-entity position="0 100 0">
+		  <a-camera></a-camera>
+		</a-entity>
 	</a-scene>
-	<script src='js/init.js'></script>
+	<script src='js/ui.js'></script>
 </body>
 </html>
