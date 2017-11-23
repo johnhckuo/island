@@ -16,7 +16,7 @@
 
 </head>
 <body>
-	<a-scene stats shadow="type: pcfsoft">
+	<a-scene stats cursor-listener shadow="type: pcfsoft">
 		<a-assets>
 			<img id="sky" src="/vr/img/sky.jpg"  alt="">
 			<img id="grass" src="/vr/img/grass.png"  alt="">
@@ -31,9 +31,17 @@
 		<!-- <a-light type="point" color="white" position="0 100 0"></a-light> -->
 
 		<a-entity directional_light id="light"></a-entity>
-		<a-entity position="0 100 0">
-		  <a-camera></a-camera>
-		</a-entity>
+	  <a-camera id="camera" position="0 100 0">
+			<a-entity id="cursor" cursor="fuse: true; fuseTimeout: 500"
+		            position="0 0 -1"
+		            geometry="primitive: ring; radiusInner: 0.01; radiusOuter: 0.015"
+		            material="color: white; shader: flat">
+		  </a-entity>
+			<!-- <a-animation id="move_animation" attribute="position"
+			begin="move"
+			dur="2000"
+			easing="linear"></a-animation> -->
+		</a-camera>
 	</a-scene>
 	<script src='js/ui.js'></script>
 </body>

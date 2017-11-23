@@ -43,6 +43,45 @@ function aframe_init(){
     }
   });
 
+
+  AFRAME.registerComponent('cursor-listener', {
+    init: function () {
+      var lastIndex = -1;
+      var COLORS = ['red', 'green', 'blue'];
+      this.el.addEventListener('click', function (evt) {
+        lastIndex = (lastIndex + 1) % COLORS.length;
+        this.setAttribute('material', 'color', COLORS[lastIndex]);
+        console.log("User moving");
+        //console.log('I was clicked at: ', evt.detail.intersection.point);
+
+        // var camera = document.querySelector('#camera').getObject3D('camera');
+        //
+        // var direction = camera.getWorldDirection();
+        // var position = camera.getWorldPosition();
+        //
+        // var distance = 100;
+        // direction = direction.multiplyScalar(distance);
+        // var new_position = {
+        //   x: position.x + direction.x,
+        //   y: position.y + direction.y,
+        //   z: position.z + direction.z,
+        // }
+        //
+        // document.querySelector('#move_animation').setAttribute('to', new_position.x + " " + new_position.y + " " + new_position.z);
+        // document.querySelector('#camera').emit('move');
+        var camera = document.querySelector('#camera').getObject3D('camera');
+        var direction = camera.getWorldDirection();
+        var distance = 10;
+        camera.position.add(direction.multiplyScalar(distance));
+      });
+    },
+    // tick: function(){
+    //     var camera = document.querySelector('#camera').getObject3D('camera');
+    //     var direction = camera.getWorldDirection();
+    //     camera.position.add(direction.multiplyScalar(this.data.stepFactor));
+    // }
+  });
+
 }
 
 function land_init(el){
@@ -322,7 +361,6 @@ function generateHeight(worldWidth, smoothinFactor, boundaryHeight, treeNumber){
 
     }
     tree_entity.setObject3D('mesh', forest);
-
 
 }
 
