@@ -53,35 +53,76 @@ function aframe_init(){
         this.setAttribute('material', 'color', COLORS[lastIndex]);
         console.log("User moving");
         //console.log('I was clicked at: ', evt.detail.intersection.point);
-
-        // var camera = document.querySelector('#camera').getObject3D('camera');
-        //
-        // var direction = camera.getWorldDirection();
-        // var position = camera.getWorldPosition();
-        //
-        // var distance = 100;
-        // direction = direction.multiplyScalar(distance);
-        // var new_position = {
-        //   x: position.x + direction.x,
-        //   y: position.y + direction.y,
-        //   z: position.z + direction.z,
-        // }
-        //
         // document.querySelector('#move_animation').setAttribute('to', new_position.x + " " + new_position.y + " " + new_position.z);
         // document.querySelector('#camera').emit('move');
-        var camera = document.querySelector('#camera').getObject3D('camera');
+        var camera = document.querySelector("a-camera").getObject3D("camera");
+        var camera_parent = document.querySelector('#camera');
         var direction = camera.getWorldDirection();
         var distance = 10;
-        camera.position.add(direction.multiplyScalar(distance));
+        camera_parent.setAttribute("position", {
+          x: camera_parent.getAttribute("position").x + direction.x, 
+          y: camera_parent.getAttribute("position").y + direction.y, 
+          z: camera_parent.getAttribute("position").z + direction.z
+        })
       });
-    },
-    // tick: function(){
-    //     var camera = document.querySelector('#camera').getObject3D('camera');
-    //     var direction = camera.getWorldDirection();
-    //     camera.position.add(direction.multiplyScalar(this.data.stepFactor));
-    // }
+    }
   });
 
+
+
+  AFRAME.registerComponent('nav-pointer', {
+    init: function () {
+      const el = this.el;
+      // When hovering on the nav mesh, show a green cursor.
+      el.addEventListener('mouseenter', () => {
+        el.setAttribute('material', {color: 'green'});
+      });
+      el.addEventListener('mouseleave', () => {
+        el.setAttribute('material', {color: 'crimson'})
+      });
+   
+      // Refresh the raycaster after models load.
+      el.sceneEl.addEventListener('object3dset', () => {
+        this.el.components.raycaster.refreshObjects();
+      });
+    }
+  });
+
+
+
+  AFRAME.registerComponent('collider-check', {
+      dependencies: ['raycaster'],
+      init: function () {
+
+          var myHeight = 2.0;
+          var cam = this.el.object3D;
+
+          this.el.addEventListener('raycaster-intersected', function (evt) {
+
+              // I've got the camera here and the intersection, so I should be able to adjust camera to match terrain?
+
+              var dist = evt.detail.intersection.distance;
+              
+              console.log(evt.detail)
+              // these values do not change :(
+              console.log(cam.position.y, dist, evt.detail.intersection.point.y);
+          });
+      }
+  });
+
+  // when we move the camera, we drag the raycaster object with us - it's not attached to the camera so it won't rotate the ray
+  AFRAME.registerComponent('moving', {
+      schema: { type: 'selector', default: '#theray'},
+      init: function () {
+          // this.data is the raycaster component
+      },
+      tick: function() {
+          // camera
+          var c = this.el.object3D.position;
+          // set raycaster position to match camera - have shifted it over a bit so we can see it
+          this.data.setAttribute('position', '' + (c.x - 2.0) + ' ' + (c.y - 2.0) + ' ' + c.z);
+      }
+  });
 }
 
 function land_init(el){

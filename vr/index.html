@@ -31,17 +31,28 @@
 		<!-- <a-light type="point" color="white" position="0 100 0"></a-light> -->
 
 		<a-entity directional_light id="light"></a-entity>
-	  <a-camera id="camera" position="0 100 0">
-			<a-entity id="cursor" cursor="fuse: true; fuseTimeout: 500"
-		            position="0 0 -1"
-		            geometry="primitive: ring; radiusInner: 0.01; radiusOuter: 0.015"
-		            material="color: white; shader: flat">
-		  </a-entity>
-			<!-- <a-animation id="move_animation" attribute="position"
-			begin="move"
-			dur="2000"
-			easing="linear"></a-animation> -->
-		</a-camera>
+
+		<a-entity id="camera" position="0 100 0" moving>
+		  	<a-camera  >
+				<a-entity id="cursor" cursor="fuse: true; fuseTimeout: 500"
+			            position="0 0 -1"
+			            geometry="primitive: ring; radiusInner: 0.01; radiusOuter: 0.015"
+			            material="color: white; shader: flat"
+			            nav-pointer>
+				</a-entity>
+				<!-- <a-animation id="move_animation" attribute="position"
+				begin="move"
+				dur="2000"
+				easing="linear"></a-animation> -->
+			</a-camera>
+		</a-entity>
+
+        <a-entity collider-check id='theray' rotation="0 0 0" position="0 100 0" visible="true">
+            <!-- the aframe inspector barfs on this -->
+            <a-entity raycaster="objects:#land;direction:0 -1 0;showLine:true;origin:0 1 0" line="start:0 0 0;end:0 -5 0:color:red;opacity:1.0"></a-entity>
+        </a-entity>
+
+
 	</a-scene>
 	<script src='js/ui.js'></script>
 </body>
