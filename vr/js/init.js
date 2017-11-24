@@ -103,10 +103,12 @@ function aframe_init(){
 
               var dist = evt.detail.intersection.distance;
               
-              console.log(evt.detail)
               // these values do not change :(
+              console.log(evt.detail.target)
               console.log(cam.position.y, dist, evt.detail.intersection.point.y);
+
           });
+
       }
   });
 
@@ -120,7 +122,7 @@ function aframe_init(){
           // camera
           var c = this.el.object3D.position;
           // set raycaster position to match camera - have shifted it over a bit so we can see it
-          this.data.setAttribute('position', '' + (c.x - 2.0) + ' ' + (c.y - 2.0) + ' ' + c.z);
+          this.data.setAttribute('position', '' + (c.x) + ' ' + (c.y) + ' ' + (c.z - 2.0));
       }
   });
 }

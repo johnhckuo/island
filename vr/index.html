@@ -49,7 +49,12 @@
 
         <a-entity collider-check id='theray' rotation="0 0 0" position="0 100 0" visible="true">
             <!-- the aframe inspector barfs on this -->
-            <a-entity raycaster="objects:#land;direction:0 -1 0;showLine:true;origin:0 1 0" line="start:0 0 0;end:0 -5 0:color:red;opacity:1.0"></a-entity>
+            <a-entity raycaster="
+            objects:#land; 
+            direction:0 -1 0; 
+            showLine:true; 
+            origin:0 1 0" 
+            line="start:0 0 0;end:0 -50 0; color:red;opacity:1.0"></a-entity>
         </a-entity>
 
 
