@@ -60,8 +60,8 @@ function aframe_init(){
         var direction = camera.getWorldDirection();
         var distance = 10;
         camera_parent.setAttribute("position", {
-          x: camera_parent.getAttribute("position").x + direction.x, 
-          y: camera_parent.getAttribute("position").y + direction.y, 
+          x: camera_parent.getAttribute("position").x + direction.x,
+          y: camera_parent.getAttribute("position").y + direction.y,
           z: camera_parent.getAttribute("position").z + direction.z
         })
       });
@@ -80,7 +80,7 @@ function aframe_init(){
       el.addEventListener('mouseleave', () => {
         el.setAttribute('material', {color: 'crimson'})
       });
-   
+
       // Refresh the raycaster after models load.
       el.sceneEl.addEventListener('object3dset', () => {
         this.el.components.raycaster.refreshObjects();
@@ -97,15 +97,15 @@ function aframe_init(){
           var myHeight = 2.0;
           var cam = this.el.object3D;
 
-          this.el.addEventListener('raycaster-intersected', function (evt) {
+          this.el.addEventListener('raycaster-intersection', function (evt) {
 
               // I've got the camera here and the intersection, so I should be able to adjust camera to match terrain?
 
-              var dist = evt.detail.intersection.distance;
-              
+              //var dist = evt.detail.intersection.distance;
+
               // these values do not change :(
-              console.log(evt.detail.target)
-              console.log(cam.position.y, dist, evt.detail.intersection.point.y);
+              console.log(evt.detail.els)
+              //console.log(cam.position.y, dist, evt.detail.intersection.point.y);
 
           });
 
