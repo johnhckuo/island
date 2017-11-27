@@ -3,8 +3,11 @@ var waterPlane;
 var tree = [];
 var boxSize = 5000;
 var worldWidth = 64;
-var smoothinFactor = 150, boundaryHeight = 80;
+var smoothinFactor = 150, boundaryHeight = 20;
 var treeNumber = 80;
+var cameraOffset = 5;
+var planeWidth = 500, planeLength = 500;
+var boundaryOffset = 10;
 
 aframe_init();
 
@@ -48,7 +51,7 @@ function aframe_init(){
     init: function () {
       var lastIndex = -1;
       var COLORS = ['red', 'green', 'blue'];
-      this.el.addEventListener('click', function (evt) {
+      this.el.addEventListener('mousedown', function (evt) {
         lastIndex = (lastIndex + 1) % COLORS.length;
         this.setAttribute('material', 'color', COLORS[lastIndex]);
         console.log("User moving");
@@ -57,8 +60,18 @@ function aframe_init(){
         // document.querySelector('#camera').emit('move');
         var camera = document.querySelector("a-camera").getObject3D("camera");
         var camera_parent = document.querySelector('#camera');
+        var currentX = camera_parent.getAttribute("position").x;
+        var currentZ = camera_parent.getAttribute("position").z;
         var direction = camera.getWorldDirection();
-        var distance = 10;
+
+        if (Math.abs(currentX + direction.x) >= (planeWidth/2 - boundaryOffset)){
+          direction.x = 0;
+        }
+
+        if (Math.abs(currentZ + direction.z) >= (planeLength/2 - boundaryOffset)){
+          direction.z = 0;
+        }
+
         camera_parent.setAttribute("position", {
           x: camera_parent.getAttribute("position").x + direction.x,
           y: camera_parent.getAttribute("position").y + direction.y,
@@ -98,13 +111,14 @@ function aframe_init(){
           var cam = this.el.object3D;
 
           this.el.addEventListener('raycaster-intersection', function (evt) {
-
               // I've got the camera here and the intersection, so I should be able to adjust camera to match terrain?
 
               //var dist = evt.detail.intersection.distance;
 
               // these values do not change :(
-              console.log(evt.detail.els)
+              //console.log(evt.detail.intersections[0].object.el.className+" : "+evt.detail.intersections[0].point.y)
+              document.querySelector('#camera').object3D.position.y = evt.detail.intersections[0].point.y + cameraOffset;
+
               //console.log(cam.position.y, dist, evt.detail.intersection.point.y);
 
           });
@@ -129,7 +143,7 @@ function aframe_init(){
 
 function land_init(el){
 
-  var geometry = new THREE.PlaneGeometry( 500, 500, worldWidth - 1, worldWidth - 1 );
+  var geometry = new THREE.PlaneGeometry( planeWidth, planeLength, worldWidth - 1, worldWidth - 1 );
   geometry.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI / 2 ) );
 
   var loader = new THREE.TextureLoader();
@@ -399,7 +413,7 @@ function generateHeight(worldWidth, smoothinFactor, boundaryHeight, treeNumber){
         tree[i].position.x = mountain.geometry.vertices[randomPosition].x;
         tree[i].position.y = mountain.geometry.vertices[randomPosition].y;
         tree[i].position.z = mountain.geometry.vertices[randomPosition].z;
-        tree[i].scale.set(0.5,0.5,0.5)
+        tree[i].scale.set(1,1,1)
         forest.add(tree[i]);
 
     }
