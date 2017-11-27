@@ -2,12 +2,13 @@ var scene, camera, renderer, controls, stats;
 var waterPlane;
 var tree = [];
 var boxSize = 5000;
-var worldWidth = 64;
+var worldWidth = 64, worldDepth = 64;
 var smoothinFactor = 150, boundaryHeight = 20;
 var treeNumber = 80;
 var cameraOffset = 5;
 var planeWidth = 500, planeLength = 500;
 var boundaryOffset = 10;
+var waveCounter = 1;
 
 aframe_init();
 
@@ -36,8 +37,13 @@ function aframe_init(){
     init: function () {
         el = this.el;  // Entity.
         water_init(el);
+    },
+    tick: function(){
+        wave(worldWidth, worldDepth, waveCounter);
+        waveCounter += 0.1;
     }
   });
+
 
   AFRAME.registerComponent('directional_light', {
     init: function () {
