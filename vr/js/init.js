@@ -57,6 +57,11 @@ function aframe_init(){
     init: function () {
       var lastIndex = -1;
       var COLORS = ['red', 'green', 'blue'];
+      var camera = document.querySelector("a-camera").getObject3D("camera");
+      var camera_parent = document.querySelector('#camera');
+      currentX = camera_parent.getAttribute("position").x;
+      currentY = camera_parent.getAttribute("position").y;
+      currentZ = camera_parent.getAttribute("position").z;
       this.el.addEventListener('mousedown', function (evt) {
         lastIndex = (lastIndex + 1) % COLORS.length;
         this.setAttribute('material', 'color', COLORS[lastIndex]);
@@ -64,24 +69,21 @@ function aframe_init(){
         //console.log('I was clicked at: ', evt.detail.intersection.point);
         // document.querySelector('#move_animation').setAttribute('to', new_position.x + " " + new_position.y + " " + new_position.z);
         // document.querySelector('#camera').emit('move');
-        var camera = document.querySelector("a-camera").getObject3D("camera");
-        var camera_parent = document.querySelector('#camera');
-        var currentX = camera_parent.getAttribute("position").x;
-        var currentZ = camera_parent.getAttribute("position").z;
         var direction = camera.getWorldDirection();
 
         if (Math.abs(currentX + direction.x) >= (planeWidth/2 - boundaryOffset)){
           direction.x = 0;
         }
-
         if (Math.abs(currentZ + direction.z) >= (planeLength/2 - boundaryOffset)){
           direction.z = 0;
         }
-
+        currentX += direction.x;
+        currentY += direction.y;
+        currentZ += direction.z;
         camera_parent.setAttribute("position", {
-          x: camera_parent.getAttribute("position").x + direction.x,
-          y: camera_parent.getAttribute("position").y + direction.y,
-          z: camera_parent.getAttribute("position").z + direction.z
+          x: currentX,
+          y: currentY,
+          z: currentZ
         })
       });
     }
@@ -122,8 +124,10 @@ function aframe_init(){
               //var dist = evt.detail.intersection.distance;
 
               // these values do not change :(
-              //console.log(evt.detail.intersections[0].object.el.className+" : "+evt.detail.intersections[0].point.y)
-              document.querySelector('#camera').object3D.position.y = evt.detail.intersections[0].point.y + cameraOffset;
+              // console.log(evt.detail.intersections[0].object.el.className)
+              // console.log(document.querySelector('#camera').object3D.position);
+              // console.log(evt.detail.intersections[0].object.el.className+" : "+evt.detail.intersections[0].point.y)
+              currentY = evt.detail.intersections[0].point.y + cameraOffset;
 
               //console.log(cam.position.y, dist, evt.detail.intersection.point.y);
 
