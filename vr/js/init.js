@@ -3,7 +3,7 @@ var waterPlane;
 var tree = [];
 var boxSize = 5000;
 var worldWidth = 64, worldDepth = 64;
-var smoothinFactor = 150, boundaryHeight = 20;
+var smoothinFactor = 150, boundaryHeight = 80;
 var treeNumber = 80;
 var cameraOffset = 5;
 var planeWidth = 500, planeLength = 500;
@@ -421,9 +421,9 @@ function generateHeight(worldWidth, smoothinFactor, boundaryHeight, treeNumber){
         tree[i] = buildTree();
         var randomPosition = Math.ceil(Math.random()*(worldWidth-1)*(worldWidth-1));
         tree[i].position.x = mountain.geometry.vertices[randomPosition].x;
-        tree[i].position.y = mountain.geometry.vertices[randomPosition].y;
+        tree[i].position.y = mountain.geometry.vertices[randomPosition].y -1;
         tree[i].position.z = mountain.geometry.vertices[randomPosition].z;
-        tree[i].scale.set(1,1,1)
+        tree[i].scale.set(1,1,1);
         forest.add(tree[i]);
 
     }
