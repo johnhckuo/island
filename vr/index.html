@@ -14,6 +14,35 @@
 	<script src='js/aframe.min.js'></script>
 	<script src='js/init.js'></script>
 
+	<script id="vertexShader" type="x-shader/x-vertex">
+		varying vec2 uVu;
+		void main(){
+			uVu = uv;
+			gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+		}
+	</script>
+
+	<script id="fragmentShader" type="x-shader/x-vertex">
+		uniform sampler2D noiseTexture;
+		uniform sampler2D baseTexture;
+
+		uniform float baseSpeed;
+		uniform float time;
+		uniform float noiseScale;
+		uniform float alpha;
+
+		varying vec2 uVu;
+
+		void main(){
+			vec2 uvShift = uVu + vec2(0.7, -1.5) * baseSpeed * time;
+			vec4 noiseGenerator = texture2D(noiseTexture, uvShift);
+			vec2 noiseShift = uVu + vec2(noiseGenerator.r, noiseGenerator.b) * noiseScale;
+			vec4 baseColor = texture2D(baseTexture, noiseShift);
+			baseColor.a = alpha;
+			gl_FragColor = baseColor;
+		}
+
+	</script>
 </head>
 <body>
 	<a-scene stats cursor-listener shadow="type: pcfsoft">

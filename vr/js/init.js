@@ -1,14 +1,17 @@
 var scene, camera, renderer, controls, stats;
 var waterPlane;
 var tree = [];
-var boxSize = 5000;
-var worldWidth = 64, worldDepth = 64;
-var smoothinFactor = 150, boundaryHeight = 80;
-var treeNumber = 80;
+var boxSize = 2000;
+var worldWidth = 16, worldDepth = 16;
+var textureRepeat = 512;
+var smoothinFactor = 50, boundaryHeight = 80;
+var treeNumber = 5;
 var cameraOffset = 5;
-var planeWidth = 500, planeLength = 500;
+var planeWidth = 100, planeLength = 100;
 var boundaryOffset = 10;
 var waveCounter = 1;
+var customUniforms;
+var clock = new THREE.Clock();
 
 aframe_init();
 
@@ -18,6 +21,7 @@ function aframe_init(){
     alert("Your browser doesn't support webgl");
     return;
   }
+
 
   AFRAME.registerComponent('land', {
     init: function () {
@@ -40,7 +44,10 @@ function aframe_init(){
     },
     tick: function(){
         wave(worldWidth, worldDepth, waveCounter);
-        waveCounter += 0.1;
+        delta = clock.getDelta();
+        waveCounter += delta;
+        customUniforms.time.value += delta;
+
     }
   });
 
@@ -177,17 +184,45 @@ function land_init(el){
 }
 
 function water_init(el){
-  var worldWidth = 64, worldDepth = 64, worldHalfWidth = worldWidth / 2, worldHalfDepth = worldDepth / 2;
+  var worldHalfWidth = worldWidth / 2, worldHalfDepth = worldDepth / 2;
 
-  var geometry = new THREE.PlaneGeometry(boxSize, boxSize, worldWidth - 1, worldDepth - 1 );
+  var geometry = new THREE.PlaneGeometry(boxSize, boxSize, worldWidth, worldDepth);
   geometry.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI / 2 ) );
 
   var loader = new THREE.TextureLoader();
-  var texture = loader.load( "img/water.jpg" , function ( texture ) {
+  var baseTexture = loader.load( "img/water2.jpg" , function ( texture ) {
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set( 5, 5 );
+    texture.offset.set( 0, 0 );
+    texture.repeat.set( textureRepeat, textureRepeat );
   });
-  waterPlane = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: 0x0055ff, wireframe:false, map:texture } ) );
+
+  var noiseTexture = loader.load( "img/noise.png" , function ( texture ) {
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    texture.offset.set( 0, 0 );
+    texture.repeat.set( textureRepeat, textureRepeat );
+  });
+
+  //shader
+  customUniforms = {
+    baseTexture: 	{ type: "t", value: baseTexture },
+		baseSpeed: 		{ type: "f", value: 0.15 },
+		noiseTexture: 	{ type: "t", value: noiseTexture },
+		noiseScale:		{ type: "f", value: 0.5 },
+		alpha: 			{ type: "f", value: 0.8 },
+		time: 			{ type: "f", value: 1.0 }
+	};
+
+  var customMaterial = new THREE.ShaderMaterial(
+  	{
+  	  uniforms: customUniforms,
+  		vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
+  		fragmentShader: document.getElementById( 'fragmentShader' ).textContent
+  	}
+  );
+
+  customMaterial.side = THREE.DoubleSide;
+
+  waterPlane = new THREE.Mesh( geometry, customMaterial );
   //waterPlane.castShadow = true;
   waterPlane.receiveShadow = true;
   el.setObject3D('mesh', waterPlane);
