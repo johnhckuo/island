@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <script id="islandVertex" type="x-shader/x-vertex">
+
+      #ifdef GL_ES
+      precision mediump float;
+      #endif
+
+      attribute float displacement;
+      uniform float amplitude;
+      uniform float u_time;
+      uniform float depth;
+      uniform float frequency;
+
+      uniform float land_vertex;
+
+      varying vec3 vNormal;
+      varying vec2 uVu;
+      varying vec3 modelPosition;
+
+      varying vec3 surfaceX;
+      varying vec3 surfaceY;
+      varying vec3 surfaceZ;
+
+
+        vec3 random(vec3 st){
+          st = vec3( dot(st,vec3(192.9898,78.233, 235.124)),
+                    dot(st,vec3(1212.9898,78.233, 1235.53)),
+                    dot(st, vec3(12.42154, 53.124, 534.123)));
+          return -1.0 + 2.0*fract(sin(st)*43758.5453123);
+        }
+
+        float noise (in vec3 p) {
+
+          vec3 i = floor(p);
+          vec3 f = fract(p);
+
+          vec3 u = f * f * (3.0 - 2.0 * f);
+          return mix( mix(mix(dot(random( i + vec3(0,0,0)), f - vec3(0,0,0)),
+                              dot(random( i + vec3(1,0,0)), f - vec3(1,0,0)),
+                              u.x),
+                          mix(dot(random( i + vec3(0,1,0)), f - vec3(0,1,0)),
+                              dot(random( i + vec3(1,1,0)), f - vec3(1,1,0)),
+                              u.x),
+                          u.y),
+                     mix(mix(dot(random( i + vec3(0,0,1)), f - vec3(0,0,1)),
+                             dot(random( i + vec3(1,0,1)), f - vec3(1,0,1)),
+                             u.x),
+                         mix(dot(random( i + vec3(0,1,1)), f - vec3(0,1,1)),
+                             dot(random( i + vec3(1,1,1)), f - vec3(1,1,1)),
+                             u.x),
+                         u.y),
+                     u.z);
+        }
+
+        float fbm(vec3 st){
+            float result = 0.0;
+            const int octave = 4;
+            float frequency = 1.0;
+
+            float amplitude = 0.5;
+            float lacunarity = 2.0;
+            float gain = 0.5;
+            for (int i = 0 ; i < octave ; i++){
+              result += amplitude*noise(st);
+              st *= lacunarity;
+              amplitude *= gain;
+            }
+            return result;
+          }
+
+
+      void main() {
+
+        vNormal = normal;
+        uVu = uv;
+        modelPosition = position;
+        vec2 st = uVu.xy * frequency;
+        surfaceX = vec3( modelMatrix[0][0], modelMatrix[0][1], modelMatrix[0][2]);
+        surfaceY = vec3( modelMatrix[1][0], modelMatrix[1][1], modelMatrix[1][2]);
+        surfaceZ = vec3( modelMatrix[2][0], modelMatrix[2][1], modelMatrix[2][2]);
+        vec3 pos = vec3(st.x, st.y, 100.0);
+        vec3 color = vec3(fbm(pos));
+        //vec3 newPosition = position + normal * vec3(displacement * amplitude);
+        vec3 newPosition = position + normal * noise(pos) * depth;
+        gl_Position = projectionMatrix *
+                      modelViewMatrix *
+                      vec4(newPosition, 1.0);
+      }
+      </script>
+
+
+      <script id="islandFragment" type="x-shader/x-fragment">
+
+          #ifdef GL_ES
+          precision mediump float;
+          #endif
+
+          uniform vec2 u_resolution;
+          uniform vec2 u_mouse;
+          uniform float u_time;
+          varying vec2 uVu;
+          varying vec3 vNormal;
+          varying vec3 surfaceX;
+          varying vec3 surfaceY;
+          varying vec3 surfaceZ;
+          varying vec3 modelPosition;
+
+          uniform float frequency;
+          uniform vec3 sunDirection;
+
+          vec3 random(vec3 st){
+              st = vec3( dot(st,vec3(192.9898,78.233, 235.124)),
+                        dot(st,vec3(1212.9898,78.233, 1235.53)),
+                      dot(st, vec3(12.42154, 53.124, 534.123)));
+              return -1.0 + 2.0*fract(sin(st)*43758.5453123);
+          }
+
+          float noise (in vec3 p) {
+
+              vec3 i = floor(p);
+              vec3 f = fract(p);
+
+              vec3 u = f * f * (3.0 - 2.0 * f);
+              return mix( mix(mix(dot(random( i + vec3(0,0,0)), f - vec3(0,0,0)),
+                                  dot(random( i + vec3(1,0,0)), f - vec3(1,0,0)),
+                                  u.x),
+                              mix(dot(random( i + vec3(0,1,0)), f - vec3(0,1,0)),
+                                  dot(random( i + vec3(1,1,0)), f - vec3(1,1,0)),
+                                  u.x),
+                          u.y),
+                          mix(mix(dot(random( i + vec3(0,0,1)), f - vec3(0,0,1)),
+                                  dot(random( i + vec3(1,0,1)), f - vec3(1,0,1)),
+                                  u.x),
+                              mix(dot(random( i + vec3(0,1,1)), f - vec3(0,1,1)),
+                                  dot(random( i + vec3(1,1,1)), f - vec3(1,1,1)),
+                                  u.x),
+                          u.y),
+                      u.z);
+          }
+
+          float fbm(vec3 st){
+            float result = 0.0;
+            const int octave = 4;
+            float frequency = 1.0;
+
+            float amplitude = 0.5;
+            float lacunarity = 2.0;
+            float gain = 0.5;
+            for (int i = 0 ; i < octave ; i++){
+              result += amplitude*noise(st);
+              st *= lacunarity;
+              amplitude *= gain;
+            }
+            return result;
+          }
+
+
+          vec3 diffuseLight(vec3 distortNormal, float intensity, vec3 sunColor){
+            return vec3(max(dot(distortNormal, normalize(-sunDirection)), 0.0)*intensity)*sunColor;
+          }
+
+
+          void main() {
+            vec2 st = uVu * frequency;
+            vec3 pos = vec3(st.x, st.y, 100.0);
+            vec3 color = vec3(fbm(vec3(modelPosition.xy, 1.0))+0.5);
+            color = vec3(fbm(pos)+0.5);
+
+            vec3 sunColor = vec3(0.298, 0.662, 0.450);
+
+            vec3 distortCoor = color.x * surfaceX + color.y*surfaceY;
+            vec3 distortNormal = distortCoor + surfaceZ;
+            //color = max(color, vec3(1.0, 1.0, 1.0));
+            color *= diffuseLight(distortNormal, 5.0, sunColor);
+
+            gl_FragColor = vec4( color, 1.0);
+
+
+          }
+
+
+      </script>
+
+
+
+      <script id="vertexShader" type="x-shader/x-vertex">
+
+      attribute float displacement;
+      uniform float amplitude;
+
+      varying vec3 vNormal;
+      varying vec2 uVu;
+      varying vec3 modelPosition;
+
+      varying vec3 surfaceX;
+      varying vec3 surfaceY;
+      varying vec3 surfaceZ;
+      varying vec3 worldPosition;
+      varying vec4 mirrorCoord;
+
+      void main() {
+
+        vNormal = normal;
+        uVu = uv;
+        modelPosition = position;
+        worldPosition = (modelMatrix * vec4(position, 1.0)).xyz;
+        surfaceX = vec3( modelMatrix[0][0], modelMatrix[0][1], modelMatrix[0][2]);
+        surfaceY = vec3( modelMatrix[1][0], modelMatrix[1][1], modelMatrix[1][2]);
+        surfaceZ = vec3( modelMatrix[2][0], modelMatrix[2][1], modelMatrix[2][2]);
+        vec3 newPosition = position + normal * vec3(displacement * amplitude);
+        //position.y = position.y + sin(u_time*position.x);
+
+        mirrorCoord = modelMatrix * vec4(position, 1.0);
+        //mirrorCoord = textureMatrix * mirrorCoord;
+
+        gl_Position = projectionMatrix *
+                      modelViewMatrix *
+                      vec4(position, 1.0);
+      }
+      </script>
+
+      <script id="fragmentShader" type="x-shader/x-fragment">
+
+          #ifdef GL_ES
+          precision mediump float;
+          #endif
+
+          uniform vec2 u_resolution;
+          uniform vec2 u_mouse;
+          uniform float u_time;
+          uniform sampler2D bumpTexture;
+
+          uniform float baseSpeed;
+          uniform float alpha;
+          uniform float time;
+          uniform float noiseScale;
+          uniform vec3 eye;
+          uniform vec3 sunDirection;
+          uniform sampler2D mirrorSampler;
+
+          varying vec2 uVu;
+          varying vec3 vNormal;
+          varying vec3 modelPosition;
+          varying vec3 surfaceX;
+          varying vec3 surfaceY;
+          varying vec3 surfaceZ;
+          varying vec3 worldPosition;
+          varying vec4 mirrorCoord;
+
+          vec3 random(vec3 st){
+              st = vec3( dot(st,vec3(192.9898,78.233, 235.124)),
+                        dot(st,vec3(1212.9898,78.233, 1235.53)),
+                      dot(st, vec3(12.42154, 53.124, 534.123)));
+              return -1.0 + 2.0*fract(sin(st)*43758.5453123);
+          }
+
+          float noise (in vec3 p) {
+
+              vec3 i = floor(p);
+              vec3 f = fract(p);
+
+              vec3 u = f * f * (3.0 - 2.0 * f);
+              return mix( mix(mix(dot(random( i + vec3(0,0,0)), f - vec3(0,0,0)),
+                                  dot(random( i + vec3(1,0,0)), f - vec3(1,0,0)),
+                                  u.x),
+                              mix(dot(random( i + vec3(0,1,0)), f - vec3(0,1,0)),
+                                  dot(random( i + vec3(1,1,0)), f - vec3(1,1,0)),
+                                  u.x),
+                          u.y),
+                          mix(mix(dot(random( i + vec3(0,0,1)), f - vec3(0,0,1)),
+                                  dot(random( i + vec3(1,0,1)), f - vec3(1,0,1)),
+                                  u.x),
+                              mix(dot(random( i + vec3(0,1,1)), f - vec3(0,1,1)),
+                                  dot(random( i + vec3(1,1,1)), f - vec3(1,1,1)),
+                                  u.x),
+                          u.y),
+                      u.z);
+          }
+
+          float fbm(vec3 st){
+            float result = 0.0;
+            const int octave = 4;
+            float frequency = 1.0;
+
+            float amplitude = 0.5;
+            float lacunarity = 2.0;
+            float gain = 0.5;
+            for (int i = 0 ; i < octave ; i++){
+              result += amplitude*noise(st);
+              st *= lacunarity;
+              amplitude *= gain;
+            }
+            return result;
+          }
+
+          vec3 diffuseLight(float intensity, vec3 sunColor){
+            return vec3(max(dot(vNormal, normalize(sunDirection)), 0.0)*intensity)*sunColor;
+          }
+
+          vec3 specularLight(vec3 distortNormal, vec3 eyeDirection, float intensity, float radius, vec3 sunColor){
+            vec3 reflect = -normalize(reflect(-sunDirection, distortNormal));
+            float direction = max(0.0, dot(eyeDirection, reflect));
+            return vec3(pow(direction, radius)*intensity)*sunColor;
+          }
+
+
+
+          void main() {
+              //vec2 st = gl_FragCoord.xy/u_resolution.xy;
+              vec2 st = uVu.xy* 10.0;
+
+              vec3 color = vec3(0.0);
+
+
+              vec3 pos = vec3(st.x*5.0, st.y*5.0, u_time*0.4);
+              color = vec3(fbm(pos) + 2.0);
+
+              vec3 wave_pos = vec3(st.x*1.0 , st.y*2.0 + (u_time/2.0), u_time*0.3);
+              color *= vec3(noise(wave_pos) + 2.0);
+
+              // vec3 wave = vec3(st.x*5.0, u_time*0.5, u_time*0.5);
+              // color = vec3(fbm(wave) + 1.5);
+
+              //color = vec3(noise(pos)*0.5 + 1.0);
+              vec3 distortCoord = color.x * surfaceX + color.y * surfaceY;
+              vec3 distortNormal = distortCoord + surfaceZ;
+              // if (dot(eyeDirection, surfaceY) < 0.0){
+              //   distortNormal = distortNormal * -1.0;
+              // }
+
+              vec3 worldToEye = eye - worldPosition;
+              vec3 eyeDirection = normalize(worldToEye);
+
+              //float sunColor = 0.498;
+              vec3 sunColor = vec3(0.298, 0.662, 0.450);
+              sunColor = vec3(0.75);
+
+              vec3 specular = vec3(0.0);
+              vec3 diffuse = vec3(0.0);
+              specular += specularLight(distortNormal, eyeDirection, 1.0, 10.0, sunColor);
+              diffuse += diffuseLight(1.0, sunColor);
+              color *= (specular+diffuse);
+            //~~~~~~~~~~
+              float distortionScale = 20.0;
+                // Compute final 3d distortion, and project it to get the mirror sampling
+             float distance = length(worldToEye);
+             vec2 distortion = distortCoord.xy * distortionScale * sqrt(distance) * 0.07;
+             vec3 mirrorDistord = mirrorCoord.xyz + vec3(distortion.x, distortion.y, 1.0);
+             vec3 reflectionSample = texture2DProj(mirrorSampler, mirrorDistord).xyz;
+            //~~~~~~
+
+              vec3 oceanBlue = vec3(0.109, 0.419, 0.627);
+              oceanBlue = vec3(0.333, 0.4, 0.4);
+              vec3 finalColor = oceanBlue * color * 0.5;
+
+              //scatter
+      //     float theta = max(dot(eyeDirection, distortNormal), 0.0);
+      //     float reflectance = 0.3 + (1.0 - 0.3) * pow((1.0 - theta), 3.0);
+      //     vec3 scatter = max(0.0, dot(distortNormal, eyeDirection)) * oceanBlue;
+            //gl_FragColor = vec4(color * scatter, 1.0);
+
+            gl_FragColor = vec4( finalColor, 1.0);
+
+
+          }
+
+
+      </script>
+
+      <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/86/three.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/controls/OrbitControls.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.5/dat.gui.min.js"></script>
+    <script type="text/javascript" src="./main.js"></script>
+  </body>
+</html>
