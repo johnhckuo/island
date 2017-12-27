@@ -85,10 +85,10 @@
         vec3 pos = vec3(st.x, st.y, 100.0);
         vec3 color = vec3(fbm(pos));
         //vec3 newPosition = position + normal * vec3(displacement * amplitude);
-        vec3 newPosition = position + normal * noise(pos) * depth;
+        vec3 newPosition = position + normal * fbm(pos) * depth;
         gl_Position = projectionMatrix *
                       modelViewMatrix *
-                      vec4(newPosition, 1.0);
+                      vec4(position, 1.0);
       }
       </script>
 
@@ -102,6 +102,8 @@
           uniform vec2 u_resolution;
           uniform vec2 u_mouse;
           uniform float u_time;
+          uniform float depth;
+
           varying vec2 uVu;
           varying vec3 vNormal;
           varying vec3 surfaceX;
@@ -111,6 +113,7 @@
 
           uniform float frequency;
           uniform vec3 sunDirection;
+          uniform sampler2D grassTexture;
 
           vec3 random(vec3 st){
               st = vec3( dot(st,vec3(192.9898,78.233, 235.124)),
@@ -160,24 +163,38 @@
 
 
           vec3 diffuseLight(vec3 distortNormal, float intensity, vec3 sunColor){
-            return vec3(max(dot(distortNormal, normalize(-sunDirection)), 0.0)*intensity)*sunColor;
+            return vec3(max(dot(distortNormal, normalize(sunDirection)), 0.0)*intensity)*sunColor;
           }
 
 
           void main() {
+            float z = 100.0;
+            float small = 0.01;
+            vec3 color = vec3(0.0);
             vec2 st = uVu * frequency;
-            vec3 pos = vec3(st.x, st.y, 100.0);
-            vec3 color = vec3(fbm(vec3(modelPosition.xy, 1.0))+0.5);
-            color = vec3(fbm(pos)+0.5);
+            vec3 pos = vec3(st.x, st.y, z);
+            // vec3 n = vec3(st.x, st.y, 1.0) + vNormal * fbm(vec3(st.x, st.y, z)) * depth;
+            // vec3 nx = vec3(st.x+1.0, st.y, 1.0) + vNormal * fbm(vec3(st.x+1.0, st.y, z)) * depth;
+            // vec3 ny = vec3(st.x, st.y+1.0, 1.0) + vNormal * fbm(vec3(st.x, st.y+1.0, z)) *depth;
+            float n = fbm(vec3(st.x, st.y, z));
+            float nx = fbm(vec3(st.x+small, st.y, z));
+            float ny = fbm(vec3(st.x, st.y+small, z));
+
+            //vec3 normal_vector = normalize(vec3(n - nx, n - ny, 1.0));
+            //vec3 normal_vector = cross(normalize(nx - n), normalize(ny - n));
+
+            vec3 normal_vector = cross(modelPosition + vNormal*(nx-n), modelPosition + vNormal*(ny-n));
 
             vec3 sunColor = vec3(0.298, 0.662, 0.450);
 
-            vec3 distortCoor = color.x * surfaceX + color.y*surfaceY;
+            float no = fbm(pos);
+            vec3 distortCoor = no * surfaceX + no*surfaceY;
             vec3 distortNormal = distortCoor + surfaceZ;
             //color = max(color, vec3(1.0, 1.0, 1.0));
-            color *= diffuseLight(distortNormal, 5.0, sunColor);
+            vec4 finalTexture = texture2D(grassTexture, uVu);
+            color = diffuseLight(vNormal, 2.0, sunColor);
 
-            gl_FragColor = vec4( color, 1.0);
+            gl_FragColor = vec4( color, 1.0)*finalTexture;
 
 
           }
@@ -378,6 +395,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script type="text/javascript" src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/controls/OrbitControls.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.5/dat.gui.min.js"></script>
+    <script type="text/javascript" src="./terrain.js"></script>
     <script type="text/javascript" src="./main.js"></script>
   </body>
 </html>

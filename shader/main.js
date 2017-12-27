@@ -8,7 +8,7 @@ var time = new THREE.Clock();
 var width = 5000, height = 5000;
 var land_depth = 800;
 var land_frequency = 7;
-var land_vertex = 32;
+var land_vertex = 64;
 
 init();
 animate();
@@ -18,10 +18,14 @@ function init() {
       // water plane test
     THREE.TextureLoader.prototype.crossOrigin = '';
     var loader = new THREE.TextureLoader();
-//    var bumpTex = loader.load('http://res.cloudinary.com/johnhckuo/image/upload/v1513674522/waternormals_q9a5yi.jpg', function(texture){
-//     texture.wrapS = THREE.RepeatWrapping;
-//     texture.wrapT = THREE.RepeatWrapping;
-//   });
+    // var bumpTex = loader.load('http://res.cloudinary.com/johnhckuo/image/upload/v1513674522/waternormals_q9a5yi.jpg', function(texture){
+    //   texture.wrapS = THREE.RepeatWrapping;
+    //   texture.wrapT = THREE.RepeatWrapping;
+    // });
+    var grassTex = loader.load('../normal/img/grass.png', function(texture){
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+    });
 
   uniforms = {
     amplitude: {
@@ -82,6 +86,7 @@ function init() {
     frequency:		{ type: "f", value: land_frequency },
     land_vertex: {type:"f", value:land_vertex},
     sunDirection: {type:"v3", value: light_source},
+    grassTexture:{type:"t", value: grassTex}
 
 
 
@@ -127,22 +132,18 @@ function init() {
 	scene.add( surface );
 
   //island
-  var land_geometry = new THREE.PlaneBufferGeometry( width/3, height/3, land_vertex, land_vertex );
+  var land_geometry = new THREE.PlaneGeometry( width/3, height/3, land_vertex, land_vertex );
+  land_geometry.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI /2  ) );
 
-  // now populate the array of attributes
-  var verts = land_geometry.attributes.position.array;
-  var values = attributes.displacement.value;
+ //  // now populate the array of attributes
+ //  var verts = land_geometry.attributes.position.array;
+ //  var values = attributes.displacement.value;
 
-  for (var v = 0; v < verts.length; v+=3) {
-    values.push((Math.sin(verts[v]) + Math.cos(verts[v+1]))*50);
-  }
-  displacement = new Float32Array( attributes.displacement.value );
-	land_geometry.addAttribute( 'displacement', new THREE.BufferAttribute( displacement, 1 ) );
-
-  var grass = loader.load('https://raw.githubusercontent.com/johnhckuo/Island_Generator/master/normal/img/grass.png', function(texture){
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-  });
+ //  for (var v = 0; v < verts.length; v+=3) {
+ //    values.push((Math.sin(verts[v]) + Math.cos(verts[v+1]))*50);
+ //  }
+ //  displacement = new Float32Array( attributes.displacement.value );
+	// land_geometry.addAttribute( 'displacement', new THREE.BufferAttribute( displacement, 1 ) );
 
   var customMaterial = new THREE.ShaderMaterial(
     {
@@ -154,8 +155,8 @@ function init() {
   );
   customMaterial.side = THREE.DoubleSide;
   land = new THREE.Mesh( land_geometry, customMaterial );
+  generateHeight(land_vertex, 1500, 100);
 	land.position.set(0,0,0);
-  land.rotation.x = Math.PI*0.5;
 	scene.add( land );
 
   var axesHelper = buildAxes(500);
@@ -192,11 +193,16 @@ function init() {
     var params = {
         Depth: land_depth,
         Frequency: land_frequency,
-        Wireframe : false
+        Wireframe : false,
+        LightX:light_source.x,
+        LightY:light_source.y,
+        LightZ:light_source.z
     };
 
     gui.add(params, 'Wireframe').onFinishChange(function(){
       land.material.wireframe = params.Wireframe;
+      surface.material.wireframe = params.Wireframe;
+
     });
 
     gui.add(params, 'Depth').min(0).max(5000).step(1).onChange(function(){
@@ -206,6 +212,18 @@ function init() {
 
     gui.add(params, 'Frequency').min(0).max(50).step(0.5).onChange(function(){
         terrain_uniforms.frequency.value = params.Frequency;
+    });
+
+    gui.add(params, 'LightX').min(-100).max(100).step(1).onChange(function(){
+        terrain_uniforms.sunDirection.value.x = params.LightX;
+    });
+
+    gui.add(params, 'LightY').min(-100).max(100).step(1).onChange(function(){
+        terrain_uniforms.sunDirection.value.y = params.LightY;
+    });
+
+    gui.add(params, 'LightZ').min(-100).max(100).step(1).onChange(function(){
+        terrain_uniforms.sunDirection.value.z = params.LightZ;
     });
 
   var meshMaterial = new THREE.MeshBasicMaterial({ color: 0xFF00FF, wireframe: true });
@@ -288,4 +306,41 @@ function buildAxis( src, dst, colorHex, dashed ) {
 
         return axis;
 
+}
+
+
+function generateHeight(worldWidth, smoothinFactor, boundaryHeight){
+    var terrainGeneration = new TerrainBuilder(worldWidth, worldWidth, worldWidth, smoothinFactor, boundaryHeight);
+    var terrain = terrainGeneration.diamondSquare();
+    land.geometry.verticesNeedUpdate = true;
+    land.geometry.normalsNeedUpdate = true;
+    var index = 0;
+    for(var i = 0; i < worldWidth; i++) {
+        for(var j = 0; j < worldWidth; j++) {
+            land.geometry.vertices[index].y = terrain[i][j];
+            index++;
+        }
+    }
+
+    // //build tree
+    // if (tree != null){
+    //     for (var i = 0 ; i <tree.length ; i++){
+    //         scene.remove(tree[i]);
+    //     }
+    // }
+
+
+
+    // for(var i = 0; i < treeNumber; i++) {
+    //     tree[i] = buildTree();
+    //     var randomPosition = Math.ceil(Math.random()*(worldWidth-1)*(worldWidth-1));
+    //     tree[i].position.x = mountain.geometry.vertices[randomPosition].x;
+    //     tree[i].position.y = mountain.geometry.vertices[randomPosition].y;
+    //     tree[i].position.z = mountain.geometry.vertices[randomPosition].z;
+    //     tree[i].scale.set(0.5,0.5,0.5)
+    //     scene.add(tree[i])
+ 
+        
+    // }
+    
 }
