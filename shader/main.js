@@ -9,6 +9,7 @@ var width = 5000, height = 5000;
 var land_depth = 800;
 var land_frequency = 7;
 var land_vertex = 64;
+var smoothingFactor = 500, boundaryHeight = 50;
 
 init();
 animate();
@@ -132,7 +133,7 @@ function init() {
 	scene.add( surface );
 
   //island
-  var land_geometry = new THREE.PlaneGeometry( width/3, height/3, land_vertex, land_vertex );
+  var land_geometry = new THREE.PlaneGeometry( width/3, height/3, land_vertex-1, land_vertex-1 );
   land_geometry.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI /2  ) );
 
  //  // now populate the array of attributes
@@ -155,7 +156,7 @@ function init() {
   );
   customMaterial.side = THREE.DoubleSide;
   land = new THREE.Mesh( land_geometry, customMaterial );
-  generateHeight(land_vertex, 1500, 100);
+  generateHeight(land_vertex, smoothingFactor, boundaryHeight);
 	land.position.set(0,0,0);
 	scene.add( land );
 
@@ -196,7 +197,9 @@ function init() {
         Wireframe : false,
         LightX:light_source.x,
         LightY:light_source.y,
-        LightZ:light_source.z
+        LightZ:light_source.z,
+        Smooth: smoothingFactor,
+        Height: boundaryHeight
     };
 
     gui.add(params, 'Wireframe').onFinishChange(function(){
@@ -212,6 +215,16 @@ function init() {
 
     gui.add(params, 'Frequency').min(0).max(50).step(0.5).onChange(function(){
         terrain_uniforms.frequency.value = params.Frequency;
+    });
+
+    gui.add(params, 'Smooth').min(0).max(500).step(1).onChange(function(){
+        smoothingFactor = params.Smooth;
+        generateHeight(land_vertex, smoothingFactor, boundaryHeight);
+    });
+
+    gui.add(params, 'Height').min(0).max(500).step(10).onChange(function(){
+        boundaryHeight = params.Height;
+        generateHeight(land_vertex, smoothingFactor, boundaryHeight);
     });
 
     gui.add(params, 'LightX').min(-100).max(100).step(1).onChange(function(){
@@ -321,6 +334,8 @@ function generateHeight(worldWidth, smoothinFactor, boundaryHeight){
             index++;
         }
     }
+    land.geometry.computeVertexNormals();
+
 
     // //build tree
     // if (tree != null){

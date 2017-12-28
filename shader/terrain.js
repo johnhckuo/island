@@ -72,10 +72,10 @@ TerrainBuilder = function(width, height, segments, smoothingFactor, boundaryHeig
 
 		//set boundary
     	for (var i = 0; i < this.segments ; i++){ 
-        	this.terrain[0][i] = -100;
-        	this.terrain[i][0] = -100;
-        	this.terrain[this.segments-1][i] = -100;
-        	this.terrain[i][this.segments-1] = -100;
+        	this.terrain[0][i] -= boundaryHeight;
+        	this.terrain[i][0] -= boundaryHeight;
+        	this.terrain[this.segments-1][i] -= boundaryHeight;
+        	this.terrain[i][this.segments-1] -= boundaryHeight;
     	}
 
 		return this.terrain;
